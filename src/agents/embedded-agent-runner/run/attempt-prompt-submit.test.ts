@@ -700,14 +700,6 @@ describe("submitEmbeddedAttemptPrompt", () => {
             applyPromptBuildToolsAllow: () => [],
             setActiveSessionSystemPrompt: vi.fn(),
             setLeasedSteering: vi.fn(),
-            cache: {
-              observabilityEnabled: false,
-              retention: "none",
-              streamStrategy: "default",
-              transport: "sse",
-              tools: [],
-              trace: null,
-            },
           });
           await submitEmbeddedAttemptPrompt({
             ...input,
