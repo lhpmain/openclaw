@@ -6,7 +6,7 @@ import type {
   ResponseInput,
 } from "openai/resources/responses/responses.js";
 import { resolveCacheRetention } from "../providers/cache-retention.js";
-import { resolveOpenAIResponsesCacheParams } from "../providers/openai-prompt-cache.js";
+import { resolveOpenAIPromptCacheParams } from "../providers/openai-prompt-cache.js";
 import {
   normalizeOpenAIReasoningEffort,
   resolveOpenAIReasoningEffortForModel,
@@ -298,7 +298,10 @@ export function buildOpenAIResponsesParams(
   const messages = convertOpenAIResponsesMessagesForRequest(model, context, options, replayMode);
   ensureOpenAIResponsesNonEmptyInput(messages, context);
   const cacheRetention = resolveCacheRetention(options?.cacheRetention);
-  const promptCacheKey = resolvePromptCacheKey(options, cacheRetention);
+  const compat = getCompat(model);
+  const promptCacheKey = compat.supportsPromptCacheKey
+    ? resolvePromptCacheKey(options, cacheRetention)
+    : undefined;
   const instructions = resolveOpenAIResponsesInstructions(
     model,
     context,
@@ -309,11 +312,7 @@ export function buildOpenAIResponsesParams(
     input: messages,
     stream: true,
     prompt_cache_key: promptCacheKey,
-    ...resolveOpenAIResponsesCacheParams(
-      model,
-      cacheRetention,
-      model.baseUrl?.includes("api.openai.com"),
-    ),
+    ...resolveOpenAIPromptCacheParams(model, cacheRetention, compat),
     ...(instructions ? { instructions } : {}),
     ...(metadata ? { metadata } : {}),
   };
